@@ -680,10 +680,38 @@ def init_db():
         c.execute('ALTER TABLE group_channel_support_requests ADD COLUMN joined_count INTEGER DEFAULT 0')
     except sqlite3.OperationalError:
         pass
-    
+
+    # ===== ترحيل تلقائي: إضافة الأعمدة الناقصة لجداول موجودة مسبقاً =====
+    # يضمن توافق قاعدة البيانات القديمة مع الكود الجديد بدون الحاجة لحذفها
+    migrations = [
+        # جدول المستخدمين
+        'ALTER TABLE users ADD COLUMN last_active TEXT',
+        'ALTER TABLE users ADD COLUMN balance INTEGER DEFAULT 0',
+        'ALTER TABLE users ADD COLUMN stars INTEGER DEFAULT 0',
+        'ALTER TABLE users ADD COLUMN username TEXT',
+        'ALTER TABLE users ADD COLUMN first_name TEXT',
+        'ALTER TABLE users ADD COLUMN is_banned INTEGER DEFAULT 0',
+        'ALTER TABLE users ADD COLUMN join_date TEXT',
+        'ALTER TABLE users ADD COLUMN total_invites INTEGER DEFAULT 0',
+        'ALTER TABLE users ADD COLUMN total_transfers INTEGER DEFAULT 0',
+        'ALTER TABLE users ADD COLUMN total_purchases INTEGER DEFAULT 0',
+        # جدول المشتريات
+        'ALTER TABLE purchases ADD COLUMN profit INTEGER DEFAULT 0',
+        "ALTER TABLE purchases ADD COLUMN source TEXT DEFAULT 'gifts'",
+        'ALTER TABLE purchases ADD COLUMN service_id TEXT',
+        'ALTER TABLE purchases ADD COLUMN link TEXT',
+        'ALTER TABLE purchases ADD COLUMN quantity INTEGER DEFAULT 0',
+        'ALTER TABLE purchases ADD COLUMN provider_order_id TEXT',
+    ]
+    for sql in migrations:
+        try:
+            c.execute(sql)
+        except sqlite3.OperationalError:
+            pass  # العمود موجود مسبقاً، نتجاهل ونكمل
+
     conn.commit()
     conn.close()
-    print("✅ تم إنشاء قاعدة البيانات الجديدة بنجاح!")
+    print("✅ تم إنشاء/تحديث قاعدة البيانات بنجاح!")
 
 # ===================== نظام الاشتراك الإجباري متعدد القنوات =====================
 def get_force_sub_channels():
@@ -5108,8 +5136,8 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await message.reply_text("❌ أرسل رقم صحيح فقط (مثال: 5 أو 10.5)")
             return
 
-        if usd_amount < 1:
-            await message.reply_text("❌ أقل مبلغ للشحن هو 1$")
+        if usd_amount < 0.10:
+            await message.reply_text("❌ أقل مبلغ للشحن هو 0.10$")
             return
         if usd_amount > 10000:
             await message.reply_text("❌ أكبر مبلغ للشحن هو 10000$ (100M نقطة)")
