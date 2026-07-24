@@ -372,22 +372,49 @@ def verify_ton_transaction(txid, expected_wallet, expected_amount):
             return False, "لم يتم العثور على عملية بهذا الرقم"
 
         data = resp.json()
-        in_msg = data.get("in_msg", {})
-        destination = in_msg.get("destination", {})
-        dest_address = destination.get("address", "") if isinstance(destination, dict) else ""
+        in_msg = data.get("in_msg") or {}
+
+        # TonAPI has returned destination as both an object and a string in
+        # different API versions.  Supporting both is important: otherwise a
+        # valid transaction is reported as invalid with no useful explanation.
+        destination = in_msg.get("destination", "")
+        if isinstance(destination, dict):
+            dest_address = destination.get("address", "")
+        else:
+            dest_address = str(destination or "")
+
         raw_value = in_msg.get("value", 0)
-        actual_amount = raw_value / (10 ** 9)
+        try:
+            actual_amount = float(raw_value) / (10 ** 9)
+        except (TypeError, ValueError):
+            return False, "لم يتم العثور على مبلغ التحويل بهذه العملية"
 
         if not dest_address:
             return False, "لم يتم العثور على تفاصيل الوجهة بهذه العملية"
 
-        if dest_address.lower() not in expected_wallet.lower():
+        # Compare canonical TON addresses, not substring membership.  A
+        # substring check can accept malformed addresses and can also reject
+        # equivalent address representations returned by the explorer.
+        def normalize_ton_address(address):
+            """Return the raw TON address so EQ/UQ forms compare equally."""
+            import base64
+            value = str(address).strip().replace(" ", "")
+            try:
+                padded = value + "=" * (-len(value) % 4)
+                decoded = base64.urlsafe_b64decode(padded)
+                # TON user-friendly address: tag(1) + workchain(1) + hash(32) + crc(2)
+                if len(decoded) == 36:
+                    return decoded[1:34]
+            except (ValueError, TypeError):
+                pass
+            return value.lower()
+
+        if normalize_ton_address(dest_address) != normalize_ton_address(expected_wallet):
             return False, "العنوان المستلم في هذه العملية لا يطابق محفظتنا"
 
         if abs(actual_amount - expected_amount) <= max(expected_amount * CRYPTO_AMOUNT_TOLERANCE, 0.01):
             return True, actual_amount
-        else:
-            return False, f"المبلغ غير مطابق (المرسل: {actual_amount} TON، المطلوب: {expected_amount} TON)"
+        return False, f"المبلغ غير مطابق (المرسل: {actual_amount} TON، المطلوب: {expected_amount} TON)"
 
     except Exception:
         return False, "تعذر التحقق من العملية حاليًا، حاول لاحقًا"
