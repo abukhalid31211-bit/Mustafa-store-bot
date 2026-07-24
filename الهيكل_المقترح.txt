@@ -1,0 +1,112 @@
+# الهيكل الاحترافي المقترح للبوت
+
+mustafa_store_bot/
+│
+├── main.py                          # نقطة البداية وتشغيل البوت
+├── config.py                        # تحميل المتغيرات من .env
+│
+├── core/
+│   ├── __init__.py
+│   ├── bot.py                       # إعداد وتشغيل البوت
+│   ├── middleware.py                # الفلاتر والاشتراك الإجباري
+│   └── error_handler.py            # معالجة الأخطاء العامة
+│
+├── database/
+│   ├── __init__.py
+│   ├── connection.py                # الاتصال بقاعدة البيانات
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── user.py                  # جدول المستخدمين
+│   │   ├── purchase.py              # جدول المشتريات
+│   │   ├── referral.py              # جدول الإحالات
+│   │   ├── coupon.py                # جدول الكوبونات
+│   │   ├── crypto_transaction.py    # جدول المعاملات الرقمية
+│   │   ├── ad.py                    # جدول الإعلانات
+│   │   ├── support_request.py       # جدول طلبات الدعم
+│   │   └── log.py                   # جدول السجلات
+│   └── migrations/
+│       ├── __init__.py
+│       └── migrate.py               # ترحيل قاعدة البيانات
+│
+├── handlers/
+│   ├── __init__.py
+│   ├── start.py                     # أمر /start و /cancel
+│   ├── callback_query.py            # معالج الأزرار الرئيسي
+│   ├── message.py                   # معالج الرسائل النصية
+│   ├── payment.py                   # معالج الدفع (Stars)
+│   └── chat_member.py              # معالج الانضمام والمغادرة
+│
+├── services/
+│   ├── __init__.py
+│   ├── smm_provider.py              # التكامل مع مزودي SMM
+│   ├── crypto_service.py            # خدمة التحقق من العملات الرقمية
+│   ├── user_service.py              # خدمات المستخدمين
+│   ├── points_service.py            # خدمات النقاط
+│   ├── coupon_service.py            # خدمات الكوبونات
+│   ├── referral_service.py          # خدمات الإحالات
+│   ├── ad_service.py                # خدمات الإعلانات
+│   └── support_service.py           # خدمات الدعم
+│
+├── keyboards/
+│   ├── __init__.py
+│   ├── main_menu.py                 # القائمة الرئيسية
+│   ├── rashek/
+│   │   ├── __init__.py
+│   │   ├── instagram.py             # أزرار انستغرام
+│   │   ├── facebook.py              # أزرار فيسبوك
+│   │   ├── tiktok.py                # أزرار تيك توك
+│   │   ├── telegram.py              # أزرار تيليجرام
+│   │   ├── youtube.py               # أزرار يوتيوب
+│   │   ├── kick.py                  # أزرار كيك
+│   │   ├── kwai.py                  # أزرار كواي
+│   │   └── others.py                # المنصات الأخرى
+│   ├── admin/
+│   │   ├── __init__.py
+│   │   ├── panel.py                 # لوحة الأدمن
+│   │   ├── users.py                 # إدارة المستخدمين
+│   │   ├── broadcast.py             # الإذاعة
+│   │   └── settings.py              # الإعدادات
+│   ├── gifts.py                     # الهدايا والجوائز
+│   ├── recharge.py                  # شحن النقاط
+│   └── support.py                   # دعم القنوات
+│
+├── utils/
+│   ├── __init__.py
+│   ├── validators.py                # التحقق من المدخلات
+│   ├── formatters.py                # تنسيق النصوص والأرقام
+│   ├── helpers.py                   # دوال مساعدة عامة
+│   └── constants.py                 # الثوابت والقيم الثابتة
+│
+├── external/
+│   ├── __init__.py
+│   ├── blockchain_apis/
+│   │   ├── __init__.py
+│   │   ├── tronscan.py              # Tronscan API
+│   │   ├── bscscan.py               # BscScan API
+│   │   └── tonapi.py                # TonAPI
+│   └── smm_apis/
+│       ├── __init__.py
+│       ├── fast70.py                # Fast70 API
+│       └── perfectfollow.py         # PerfectFollow API
+│
+├── jobs/
+│   ├── __init__.py
+│   ├── autopost.py                  # النشر التلقائي للكوبونات
+│   ├── order_tracking.py            # تتبع حالة الطلبات
+│   └── backup.py                    # النسخ الاحتياطي التلقائي
+│
+├── tests/
+│   ├── __init__.py
+│   ├── test_crypto_service.py
+│   ├── test_smm_provider.py
+│   ├── test_user_service.py
+│   ├── test_coupon_service.py
+│   └── test_validators.py
+│
+├── .env.example                     # مثال لملف المتغيرات
+├── requirements.txt                 # المكتبات المطلوبة
+├── Dockerfile                       # ملف Docker
+├── docker-compose.yml               # Docker Compose
+├── README.md                        # توثيق المشروع
+├── .gitignore                       # ملفات التجاهل
+└── LICENSE                          # الرخصة
